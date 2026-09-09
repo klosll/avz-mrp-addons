@@ -305,8 +305,8 @@ class MrpProduction(models.Model):
                                     ).mapped("qty_done")
                                 )
                             )
-                    i = qty.index(max(qty))
-                    if i:
+                    if qty:
+                        i = qty.index(max(qty))
                         max_product = products[i]
                         max_qty = qty[i]
                         if max_product and max_qty:
