@@ -37,6 +37,9 @@ class StockMoveLine(models.Model):
         string="Average Price",
         compute="_compute_average_price",
     )
+    production_id = fields.Many2one(
+        "mrp.production", "Production Order", check_company=True, index=True
+    )
 
     @api.depends("lot_id", "lot_id.average_price")
     def _compute_average_price(self):

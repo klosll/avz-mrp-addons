@@ -10,6 +10,7 @@ class StockProductionLot(models.Model):
         string="Average Price",
         digits="MRP Price Decimal Precision",
         compute="_compute_average_price",
+        store=True,
     )
 
     @api.depends(
@@ -29,6 +30,10 @@ class StockProductionLot(models.Model):
                 if qty_done != 0:
                     average_price = amount_total / qty_done
             line.average_price = average_price
+
+    def action_recompute_average_price(self):
+        for lot in self:
+            lot._compute_average_price()
 
     def action_view_move_lines(self):
         context = self.env.context.copy()
