@@ -233,18 +233,22 @@ class StockMoveLine(models.Model):
                         entry_same_lots = line.production_id.move_line_ids.filtered(
                             lambda c: c.lot_id.name == line.lot_id.name
                         )
+                        entry_cost = 0
                         if (
-                            not entry_same_lots
-                            or sum(entry_same_lots.mapped("qty_done")) == 0
+                            entry_same_lots
+                            and sum(entry_same_lots.mapped("qty_done")) != 0
                         ):
-                            cost = 0
-                        else:
                             entry_cost = sum(entry_same_lots.mapped("amount")) / sum(
                                 entry_same_lots.mapped("qty_done")
                             )
+                        if not entry_cost:
+                            entry_cost = line.production_id.average_cost
+                        if entry_cost:
                             cost = (line.month_cost + entry_cost) * (
                                 line.move_id.byproduct_id.coefficient
                             )
+                        else:
+                            cost = 0
             line.base_price = cost
             if not line.applied_price:
                 line.applied_price = cost
