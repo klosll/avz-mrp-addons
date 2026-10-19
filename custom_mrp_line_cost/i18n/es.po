@@ -88,6 +88,11 @@ msgid "Canal Cost"
 msgstr "Coste canal"
 
 #. module: custom_mrp_line_cost
+#: model:ir.model.fields,field_description:custom_mrp_line_cost.field_mrp_production__canal_kgs
+msgid "Canal Kgs"
+msgstr "Kilos canal"
+
+#. module: custom_mrp_line_cost
 #: model:ir.model.fields,field_description:custom_mrp_line_cost.field_stock_move_line__clean_qty
 msgid "Clean"
 msgstr "Limpio"
