@@ -809,6 +809,9 @@
         <field name="arch" type="xml">
             <pivot string="Clasificado">
                 <field name="name" />
+                <field name="channel_temperature" type="measure" />
+                <field name="canal_kgs" type="measure" />
+                <field name="canal_weight" type="measure" />
                 <field name="rto_percentage" type="measure" />
                 <field name="rto_canal" type="measure" />
                 <field name="asphyxiation_units" type="measure" />

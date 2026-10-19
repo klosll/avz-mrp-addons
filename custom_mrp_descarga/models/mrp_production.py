@@ -52,11 +52,6 @@ class MrpProduction(models.Model):
     guide_number = fields.Char(
         string="Guide Number", related="saca_line_id.guide_number", store=True
     )
-    channel_temperature = fields.Float(
-        string="Channel Temperature",
-        related="saca_line_id.channel_temperature",
-        store=True,
-    )
     staff = fields.Integer(string="Staff", related="saca_line_id.staff", store=True)
     product_qty = fields.Float(copy=False)
     hen_unit = fields.Integer(
