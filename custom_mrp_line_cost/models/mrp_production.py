@@ -327,44 +327,73 @@ class MrpProduction(models.Model):
                                 max_line.applied_price = price
                                 max_line.onchange_applied_price()
 
+    def _canal_move_line_sums(self):
+        """Sum the canal move lines of ``self``, grouped by production.
+
+        Implemented with read_group on purpose: these stored fields get
+        recomputed for the whole table on module update, and walking
+        ``move_line_ids`` there prefetches every move line of every production
+        into the cache. read_group also avoids the model ``_order``, which is
+        not guaranteed to be usable while the registry is being built.
+        """
+        groups = self.env["stock.move.line"].read_group(
+            [
+                ("production_id", "in", self.ids),
+                ("canal", "=", True),
+                ("location_dest_id", "in", self.production_location_id.ids),
+            ],
+            [
+                "qty_done:sum",
+                "unit:sum",
+                "percentage:sum",
+                "amount:sum",
+                "weight:sum",
+            ],
+            ["production_id"],
+        )
+        keys = ("qty_done", "unit", "percentage", "amount", "weight")
+        return {
+            group["production_id"][0]: {key: group[key] or 0 for key in keys}
+            for group in groups
+            if group.get("production_id")
+        }
+
     @api.depends("move_line_ids.canal", "move_line_ids.qty_done")
     def _compute_canal_weight(self):
+        sums = self._canal_move_line_sums()
         for line in self:
             canal_weight = 0
-            canal_lines = line.move_line_ids.filtered(lambda c: c.canal is True)
-            canal_weight = sum(canal_lines.mapped("qty_done"))
-            canal_unit = sum(canal_lines.mapped("unit"))
-            if canal_unit != 0:
-                canal_weight = canal_weight / canal_unit
+            group = sums.get(line.id)
+            if group:
+                canal_weight = group["qty_done"]
+                if group["unit"] != 0:
+                    canal_weight = canal_weight / group["unit"]
             line.canal_weight = canal_weight
 
     @api.depends("move_line_ids.canal", "move_line_ids.qty_done")
     def _compute_canal_kgs(self):
+        sums = self._canal_move_line_sums()
         for line in self:
-            canal_lines = line.move_line_ids.filtered(lambda c: c.canal is True)
-            line.canal_kgs = sum(canal_lines.mapped("qty_done"))
+            group = sums.get(line.id)
+            line.canal_kgs = group["qty_done"] if group else 0
 
     @api.depends("move_line_ids.canal", "move_line_ids.percentage")
     def _compute_rto_canal(self):
+        sums = self._canal_move_line_sums()
         for line in self:
-            rto_canal = 0
-            canal_lines = line.move_line_ids.filtered(lambda c: c.canal is True)
-            if canal_lines:
-                rto_canal = sum(canal_lines.mapped("percentage"))
-            line.rto_canal = rto_canal
+            group = sums.get(line.id)
+            line.rto_canal = group["percentage"] if group else 0
 
     @api.depends(
         "move_line_ids.canal", "move_line_ids.qty_done", "move_line_ids.amount"
     )
     def _compute_canal_cost(self):
+        sums = self._canal_move_line_sums()
         for line in self:
             canal_cost = 0
-            if line.move_line_ids:
-                canal_lines = line.move_line_ids.filtered(lambda c: c.canal is True)
-                if canal_lines and sum(canal_lines.mapped("weight")) != 0:
-                    canal_cost = sum(canal_lines.mapped("amount")) / sum(
-                        canal_lines.mapped("qty_done")
-                    )
+            group = sums.get(line.id)
+            if group and group["weight"] != 0 and group["qty_done"] != 0:
+                canal_cost = group["amount"] / group["qty_done"]
             line.canal_cost = canal_cost
 
     def action_view_move_to_do(self):
