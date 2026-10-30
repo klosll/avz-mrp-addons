@@ -172,13 +172,13 @@ class MrpWorkorder(models.Model):
             vals["leave_id"] = leave.id
             return self.write(vals)
         else:
-            if not self.date_planned_start or self.date_planned_start > start_date:
-                vals["date_planned_start"] = start_date
-                vals["date_planned_finished"] = self._calculate_date_planned_finished(
+            if not self.date_start or self.date_start > start_date:
+                vals["date_start"] = start_date
+                vals["date_finished"] = self._calculate_date_finished(
                     start_date
                 )
-            if self.date_planned_finished and self.date_planned_finished < start_date:
-                vals["date_planned_finished"] = start_date
+            if self.date_finished and self.date_finished < start_date:
+                vals["date_finished"] = start_date
             return self.with_context(bypass_duration_calculation=True).write(vals)
 
     def _domain_mrp_workcenter_productivity(self, doall):

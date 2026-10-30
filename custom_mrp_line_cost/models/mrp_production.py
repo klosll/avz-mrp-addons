@@ -19,6 +19,13 @@ class MrpProduction(models.Model):
         store=True,
         digits=KILLING_COST_DIGITS,
     )
+    canal_kgs = fields.Float(
+        string="Canal Kgs",
+        compute="_compute_canal_kgs",
+        store=True,
+        digits=KILLING_COST_DIGITS,
+        aggregator="avg",
+    )
     rto_canal = fields.Float(
         string="Rto. Canal",
         compute="_compute_rto_canal",
@@ -318,6 +325,12 @@ class MrpProduction(models.Model):
             if canal_unit != 0:
                 canal_weight = canal_weight / canal_unit
             line.canal_weight = canal_weight
+
+    @api.depends("move_line_ids.canal", "move_line_ids.quantity")
+    def _compute_canal_kgs(self):
+        for line in self:
+            canal_lines = line.move_line_ids.filtered(lambda c: c.canal is True)
+            line.canal_kgs = sum(canal_lines.mapped("quantity"))
 
     @api.depends("move_line_ids.canal", "move_line_ids.percentage")
     def _compute_rto_canal(self):
