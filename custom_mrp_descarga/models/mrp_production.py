@@ -144,7 +144,7 @@ class MrpProduction(models.Model):
         ],
     )
     channel_temperature = fields.Float(
-        string="Channel Temperature", group_operator="avg"
+        string="Channel Temperature", aggregator="avg"
     )
     waiting_time = fields.Float(string="Waiting Time")
     clasified_ids = fields.One2many(
@@ -186,19 +186,19 @@ class MrpProduction(models.Model):
         string="Asphyxiated",
         compute="_compute_asphyxiation_units",
         store=True,
-        group_operator="avg",
+        aggregator="avg",
     )
     seized_units = fields.Integer(
         string="Seized",
         compute="_compute_seized_units",
         store=True,
-        group_operator="avg",
+        aggregator="avg",
     )
     rto_percentage = fields.Float(
         string="Rto. %",
         compute="_compute_rto_percentage",
         store=True,
-        group_operator="avg",
+        aggregator="avg",
     )
     bom_category_id = fields.Many2one(
         string="Category", related="bom_id.category_id", store=True
@@ -241,7 +241,7 @@ class MrpProduction(models.Model):
     second_performance = fields.Float(
         compute="_compute_second_performance",
         store=True,
-        group_operator="avg",
+        aggregator="avg",
     )
     breast_total = fields.Float(
         string="Total Breast",

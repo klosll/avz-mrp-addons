@@ -6,7 +6,7 @@ from odoo import _, fields, models
 class SaleReport(models.Model):
     _inherit = "sale.report"
 
-    lot_average_price = fields.Float(readonly=True, group_operator="avg")
+    lot_average_price = fields.Float(readonly=True, aggregator="avg")
     lot_id = fields.Many2one(
         comodel_name="stock.lot",
         readonly=True,

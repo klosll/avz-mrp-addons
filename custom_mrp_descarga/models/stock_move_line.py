@@ -13,7 +13,7 @@ class StockMoveLine(models.Model):
         string="Performance %",
         compute="_compute_performance",
         store=True,
-        group_operator="sum",
+        aggregator="sum",
     )
     sequence = fields.Integer(
         string="Sequence",
