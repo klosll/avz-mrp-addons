@@ -173,6 +173,11 @@ class StockMoveLine(models.Model):
         "lot_id",
     )
     def _compute_base_price(self):
+        # HT02687: en v18 asignar applied_price/standard_price dentro de un
+        # compute dispara write() -> onchanges -> write() ... (recursion infinita
+        # al recomputar la tabla al instalar). El compute solo debe asignar su
+        # propio campo; el valor por defecto de applied_price lo sigue poniendo
+        # onchange_base_price() cuando se edita a mano (comportamiento v14).
         for line in self:
             cost = 0
             if line.production_id and not line.production_id.date_start:
@@ -209,10 +214,6 @@ class StockMoveLine(models.Model):
                                 line.move_id.byproduct_id.coefficient
                             )
             line.base_price = cost
-            if not line.applied_price:
-                line.applied_price = cost
-            if not line.standard_price:
-                line.standard_price = cost
 
     @api.depends("unit", "quantity")
     def _compute_weight(self):
